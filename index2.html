@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<title>Napoli</title>
+
+<!-- Google Maps JS API (senza chiave funziona solo in localhost) -->
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<!-- MarkerClusterer (versione ufficiale aggiornata) -->
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+</head>
+<body>
+<div id="gmap" style="width:400px; height:500px"></div>
+
+<script>
+var map_center = new google.maps.LatLng(0.1700235, 20.7319823);
+
+var map = new google.maps.Map(document.getElementById("gmap"), {
+    zoom: 1,
+    center: map_center,
+    mapTypeId: google.maps.MapTypeId.HYBRID
+});
+
+var marker_list = [];
+
+for (var i = 0; i < 100; i++) {
+    var pos = new google.maps.LatLng(
+        Math.floor(Math.random() * 50),
+        Math.floor(Math.random() * 100)
+    );
+
+    var marker = new google.maps.Marker({
+        position: pos,
+        map: map,
+        title: "Title"
+    });
+
+    // Evento click sul marker
+    google.maps.event.addListener(marker, "click", function(i) {
+        return function() {
+            alert("Click on marker " + i);
+        };
+    }(i));
+
+    marker_list.push(marker);
+}
+
+// MarkerClusterer (nuova sintassi)
+new markerClusterer.MarkerClusterer({
+    map: map,
+    markers: marker_list,
+    gridSize: 40,
+    minimumClusterSize: 4
+});
+</script>
+
+</body>
+</html>
