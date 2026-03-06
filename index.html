@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<title>Napoli - Luoghi di Cultura</title>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js"></script>
+
+<!-- MarkerClusterer -->
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+<style>
+  #gmap {
+    width: 100%;
+    height: 600px;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="gmap"></div>
+
+<script>
+// ------------------------------
+// 1. CREAZIONE MAPPA
+// ------------------------------
+const map = new google.maps.Map(document.getElementById("gmap"), {
+    zoom: 12,
+    center: { lat: 40.8518, lng: 14.2681 }, // Napoli
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+});
+
+let marker_list = [];
+
+// ------------------------------
+// 2. CARICA GEOJSON
+// ------------------------------
+fetch("luoghi_cultura_napoli.geojson")
+  .then(response => response.json())
+  .then(data => {
+    
+    data.features.forEach((feature, index) => {
+      
+      const coords = feature.geometry.coordinates;
+      const props  = feature.properties;
+
+      const latLng = new google.maps.LatLng(coords[1], coords[0]);
+
+      // ------------------------------
+      // 3. ICONA PERSONALIZZATA
+      // icons/tipologia.png
+      // ------------------------------
+      const iconPath = "icons/" + props.tipologia + ".png";
+
+      const marker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: props.nome,
+        icon: {
+          url: iconPath,
+          scaledSize: new google.maps.Size(32, 32)
+        }
+      });
+
+      // ------------------------------
+      // 4. FINESTRA INFORMATIVA
+      // ------------------------------
+      const info = new google.maps.InfoWindow({
+        content: `
+          <strong>${props.nome}</strong><br>
+          <em>${props.tipologia}</em><br>
+          <b>Quartiere:</b> ${props.quartiere}<br>
+          <b>Indirizzo:</b> ${props.indirizzo}<br>
+          <br>
+          <a href="${props.dettaglio}" target="_blank">Scheda dettagliata</a><br>
+          <img src="${props.imageUrl}" width="150">
+        `
+      });
+
+      marker.addListener("click", () => {
+        info.open(map, marker);
+      });
+
+      // Aggiungi alla lista per il cluster
+      marker_list.push(marker);
+
+    });
+
+    // ------------------------------
+    // 5. MARKER CLUSTERER
+    // ------------------------------
+    new markerClusterer.MarkerClusterer({
+      map: map,
+      markers: marker_list,
+      gridSize: 40,
+      minimumClusterSize: 3
+    });
+
+  })
+  .catch(err => {
+    console.error("Errore caricamento GeoJSON:", err);
+  });
+
+</script>
+
+</body>
+</html>
